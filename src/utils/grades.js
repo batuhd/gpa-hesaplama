@@ -34,25 +34,36 @@ export const getLetterFromScore = (score, finalScore, finalThreshold = 0) => {
   return { letter: 'FF', isThresholdFail: false };
 };
 
+function findFinalExam(exams) {
+  if (!exams || exams.length === 0) return null;
+  // 1. Önce type === 'final' olanları ara
+  let exam = exams.find((e) => e.type === 'final');
+  if (exam) return exam;
+  // 2. Yoksa isimde final/bütünleme/yılsonu geçenleri ara (case-insensitive)
+  exam = exams.find((e) =>
+    /final|bütünleme|bütunleme|yılsonu|yıl sonu|yilsonu|yil sonu/i.test(e.name)
+  );
+  if (exam) return exam;
+  // 3. Hala yoksa en yüksek ağırlıklı olanı al
+  return [...exams].sort((a, b) => Number(b.weight) - Number(a.weight))[0];
+}
+
 export const calculateCourse = (course) => {
   let total = 0;
   let weightSum = 0;
-  let finalScore = null;
-  let hasFinal = false;
 
   course.exams.forEach((ex) => {
     const w = Number(ex.weight) || 0;
-    if (w > 0) {
-      if (ex.score !== null && ex.score !== undefined && ex.score !== '') {
-        total += Number(ex.score) * (w / 100);
-        weightSum += w;
-      }
-      if (ex.type === 'final') {
-        hasFinal = true;
-        finalScore = ex.score;
-      }
+    if (w > 0 && ex.score !== null && ex.score !== undefined && ex.score !== '') {
+      total += Number(ex.score) * (w / 100);
+      weightSum += w;
     }
   });
+
+  // Final sınavını bul (tip veya isimden)
+  const finalExam = findFinalExam(course.exams);
+  const finalScore = finalExam ? finalExam.score : null;
+  const hasFinal = finalExam && finalExam.score !== null && finalExam.score !== undefined && finalExam.score !== '';
 
   const average = parseFloat(total.toFixed(2));
   const { letter, isThresholdFail } = getLetterFromScore(

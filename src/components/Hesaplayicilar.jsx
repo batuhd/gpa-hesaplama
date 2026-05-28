@@ -11,6 +11,20 @@ const TARGETS = [
   { key: 'dd', label: 'DD', min: 45 },
 ];
 
+function findFinalExam(exams) {
+  if (!exams || exams.length === 0) return null;
+  // 1. Önce type === 'final' olanları ara
+  let exam = exams.find((e) => e.type === 'final');
+  if (exam) return exam;
+  // 2. Yoksa isimde final/bütünleme/yılsonu geçenleri ara (case-insensitive)
+  exam = exams.find((e) =>
+    /final|bütünleme|bütunleme|yılsonu|yıl sonu|yilsonu|yil sonu/i.test(e.name)
+  );
+  if (exam) return exam;
+  // 3. Hala yoksa en yüksek ağırlıklı olanı al
+  return [...exams].sort((a, b) => Number(b.weight) - Number(a.weight))[0];
+}
+
 export default function Hesaplayicilar({ courses }) {
   const [selectedCourseId, setSelectedCourseId] = useState('');
   const [scenarioScores, setScenarioScores] = useState({});
@@ -25,7 +39,7 @@ export default function Hesaplayicilar({ courses }) {
   // Final target calculator
   const finalExam = useMemo(() => {
     if (!selectedCourse) return null;
-    return selectedCourse.exams.find((e) => e.type === 'final');
+    return findFinalExam(selectedCourse.exams);
   }, [selectedCourse]);
 
   const preFinal = useMemo(() => {
@@ -33,7 +47,8 @@ export default function Hesaplayicilar({ courses }) {
     let sum = 0;
     let wSum = 0;
     selectedCourse.exams.forEach((e) => {
-      if (e.type !== 'final' && e.score !== null && e.score !== undefined && e.score !== '') {
+      // Final sınavı hariç diğerlerini hesapla (id ile karşılaştır)
+      if (e.id !== finalExam.id && e.score !== null && e.score !== undefined && e.score !== '') {
         sum += Number(e.score) * (Number(e.weight) / 100);
         wSum += Number(e.weight);
       }
