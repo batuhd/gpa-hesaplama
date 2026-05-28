@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f4f6f8;
+  color: #333;
+  margin: 0;
+  padding: 0;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+.portal-table th,
+.portal-table td {
+  border: 1px solid #dee2e6;
+  padding: 10px 12px;
+  text-align: center;
+  vertical-align: middle;
+  font-size: 13px;
+}
+.portal-table th {
+  background: #fff;
+  font-weight: 600;
+  color: #333;
+}
+.portal-table tbody tr:hover td {
+  background-color: #f1f8ff;
+}
+
+input,
+select {
+  outline: none;
+}
+input:focus,
+select:focus {
+  border-color: #0056b3;
+  box-shadow: 0 0 0 2px rgba(0, 86, 179, 0.15);
+}
