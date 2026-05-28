@@ -3,6 +3,8 @@ import Layout from './components/Layout';
 import DersTablosu from './components/DersTablosu';
 import DersModal from './components/DersModal';
 import Transkript from './components/Transkript';
+import VeriYonetimi from './components/VeriYonetimi';
+import Alert from './components/Alert';
 import { loadData, saveData } from './utils/storage';
 
 export default function App() {
@@ -10,6 +12,7 @@ export default function App() {
   const [courses, setCourses] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingCourse, setEditingCourse] = useState(null);
+  const [notification, setNotification] = useState(null);
 
   useEffect(() => {
     const data = loadData();
@@ -46,12 +49,25 @@ export default function App() {
     setModalOpen(true);
   };
 
+  const handleImport = useCallback((data, error) => {
+    if (error) {
+      setNotification({ message: error, type: 'error' });
+      return;
+    }
+    if (confirm('Bu işlem mevcut tüm derslerinizin üzerine yazacak. Devam etmek istiyor musunuz?')) {
+      setCourses(data.courses || []);
+      setNotification({ message: 'Veriler başarıyla yüklendi!', type: 'success' });
+    }
+  }, []);
+
   const renderPage = () => {
     switch (currentPage) {
       case 'results':
         return <DersTablosu courses={courses} onEdit={openEdit} onAdd={openAdd} />;
       case 'transcript':
         return <Transkript courses={courses} />;
+      case 'settings':
+        return <VeriYonetimi courses={courses} onImport={handleImport} />;
       default:
         return <DersTablosu courses={courses} onEdit={openEdit} onAdd={openAdd} />;
     }
@@ -67,6 +83,13 @@ export default function App() {
         onDelete={handleDeleteCourse}
         editingCourse={editingCourse}
       />
+      {notification && (
+        <Alert
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification(null)}
+        />
+      )}
     </Layout>
   );
 }

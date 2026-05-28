@@ -50,3 +50,14 @@ select:focus {
   border-color: #0056b3;
   box-shadow: 0 0 0 2px rgba(0, 86, 179, 0.15);
 }
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
