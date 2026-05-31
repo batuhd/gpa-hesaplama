@@ -2,12 +2,21 @@ import { useState, useMemo } from 'react';
 import { calculateCourse } from '../utils/grades';
 import Hesaplayicilar from './Hesaplayicilar';
 
-export default function DersTablosu({ courses, onEdit, onAdd }) {
+export default function DersTablosu({ courses, onEdit, onAdd, onPaste }) {
   const [selectedTerm, setSelectedTerm] = useState('Tümü');
 
-  const terms = useMemo(() => {
-    const set = new Set(courses.map((c) => `${c.year} ${c.term}`));
-    return ['Tümü', ...Array.from(set).sort()];
+  const groupedTerms = useMemo(() => {
+    const map = {};
+    courses.forEach((c) => {
+      if (!map[c.year]) map[c.year] = new Set();
+      map[c.year].add(c.term);
+    });
+    const sortedYears = Object.keys(map).sort();
+    const result = {};
+    sortedYears.forEach((year) => {
+      result[year] = Array.from(map[year]).sort();
+    });
+    return result;
   }, [courses]);
 
   const filtered = useMemo(() => {
@@ -24,12 +33,25 @@ export default function DersTablosu({ courses, onEdit, onAdd }) {
           <select
             value={selectedTerm}
             onChange={(e) => setSelectedTerm(e.target.value)}
-            className="border border-gray-300 rounded px-3 py-1.5 text-sm bg-white"
+            className="border border-gray-300 rounded px-2 py-1 text-sm bg-white"
           >
-            {terms.map((t) => (
-              <option key={t} value={t}>{t}</option>
+            <option value="Tümü">Tümü</option>
+            {Object.entries(groupedTerms).map(([year, terms]) => (
+              <optgroup key={year} label={year}>
+                {terms.map((term) => (
+                  <option key={`${year} ${term}`} value={`${year} ${term}`}>
+                    {term}
+                  </option>
+                ))}
+              </optgroup>
             ))}
           </select>
+          <button
+            onClick={onPaste}
+            className="bg-white border border-gray-300 text-[#333] text-sm font-medium px-4 py-1.5 rounded hover:bg-[#f1f5f9] transition whitespace-nowrap"
+          >
+            Sayfadan Yapıştır
+          </button>
           <button
             onClick={onAdd}
             className="bg-white border border-gray-300 text-[#333] text-sm font-medium px-4 py-1.5 rounded hover:bg-[#f1f5f9] transition whitespace-nowrap"

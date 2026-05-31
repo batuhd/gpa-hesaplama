@@ -1,0 +1,2 @@
+Notlar ve Katsayılar; AA:4, BA:3.5, BB: 3, CB:2.5, CC:2 , DC:1.5, DD:1, FF:0, EX:-, F:0 , I:0, NA:0, W:0 , M:-, S:-, U:-, P:-, NI:0.
+Kısaltmalar; Z: Zorunlu, P:Program Seçmeli, F:Fakülte Seçmeli, U:Üniversite Seçmeli, Y:Ortalamaya Katılmaz, R:Tekrar, T: Transfer, D-:Seçilen Ders, I:Eksik Not, S:Yeterli Not, U:Yetersiz Not, EX:Muaf Not, M:Muaf Not, W:Çekilmiş Not, NI:Program Dışı Not, P:Başarıyla Sürdürmekte Olan, NA:Devamsızlıktan Başarısız

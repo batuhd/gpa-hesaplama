@@ -31,6 +31,27 @@ export default function Hesaplayicilar({ courses }) {
 
   const selectedCourse = useMemo(() => courses.find((c) => String(c.id) === selectedCourseId), [courses, selectedCourseId]);
 
+  const groupedCourses = useMemo(() => {
+    const map = {};
+    courses.forEach((c) => {
+      const key = `${c.year} ${c.term}`;
+      if (!map[key]) map[key] = [];
+      map[key].push(c);
+    });
+    // Sort each group by course code
+    Object.keys(map).forEach((key) => {
+      map[key].sort((a, b) => a.code.localeCompare(b.code));
+    });
+    // Sort keys (terms) chronologically
+    const sortedKeys = Object.keys(map).sort((a, b) => {
+      const [yearA, termA] = a.split(' ');
+      const [yearB, termB] = b.split(' ');
+      if (yearA !== yearB) return yearB.localeCompare(yearA); // Newest year first
+      return termA === 'Güz' ? -1 : 1; // Güz before Bahar
+    });
+    return { map, keys: sortedKeys };
+  }, [courses]);
+
   const currentResult = useMemo(() => {
     if (!selectedCourse) return null;
     return calculateCourse(selectedCourse);
@@ -102,20 +123,25 @@ export default function Hesaplayicilar({ courses }) {
   return (
     <div className="space-y-6">
       <div className="bg-white border border-[#dee2e6] rounded-md p-4">
-        <h2 className="text-base font-bold text-[#333] mb-4">Hesaplayıcılar</h2>
+        <h2 className="text-base font-bold text-[#333] mb-3">Hesaplayıcılar</h2>
         <div className="max-w-md">
-          <label className="block text-xs font-semibold text-gray-600 mb-1">Ders Seçiniz</label>
           <select
             value={selectedCourseId}
             onChange={(e) => {
               setSelectedCourseId(e.target.value);
               setScenarioScores({});
             }}
-            className="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-white"
+            className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm bg-white"
           >
-            <option value="">-- Ders Seçiniz --</option>
-            {courses.map((c) => (
-              <option key={c.id} value={String(c.id)}>{c.code} - {c.name}</option>
+            <option value="">Ders seçiniz...</option>
+            {groupedCourses.keys.map((termKey) => (
+              <optgroup key={termKey} label={termKey}>
+                {groupedCourses.map[termKey].map((c) => (
+                  <option key={c.id} value={String(c.id)}>
+                    {c.code} - {c.name}
+                  </option>
+                ))}
+              </optgroup>
             ))}
           </select>
         </div>
@@ -124,71 +150,61 @@ export default function Hesaplayicilar({ courses }) {
       {selectedCourse && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Gereken Final */}
-          <div className="bg-white border border-[#dee2e6] rounded-md p-5">
-            <h3 className="text-sm font-bold text-[#333] mb-3">Gereken Final Notu Hesaplayıcı</h3>
-            <p className="text-xs text-gray-500 mb-4">
-              Mevcut sınav ortalamanız: <strong>{preFinal.toFixed(2)}</strong> (Final ağırlığı: {finalWeight}%)
+          <div className="bg-white border border-[#dee2e6] rounded-md p-4">
+            <h3 className="text-sm font-bold text-[#333] mb-2">Gereken Final Notu</h3>
+            <p className="text-xs text-gray-500 mb-3">
+              Ortalamanız: <strong>{preFinal.toFixed(2)}</strong> · Final: {finalWeight}%
             </p>
 
-            <table className="w-full border-collapse text-sm">
-              <thead>
-                <tr className="bg-[#fafbfc]">
-                  <th className="border border-[#dee2e6] px-3 py-2 text-left">Harf Notu</th>
-                  <th className="border border-[#dee2e6] px-3 py-2">Katsayı</th>
-                  <th className="border border-[#dee2e6] px-3 py-2">Gereken Ort.</th>
-                  <th className="border border-[#dee2e6] px-3 py-2">Alınması Gereken Final</th>
-                </tr>
-              </thead>
-              <tbody>
-                {TARGETS.map((t) => {
-                  const needed = computeNeeded(t.min);
-                  const coefMap = { AA: 4.0, BA: 3.5, BB: 3.0, CB: 2.5, CC: 2.0, DC: 1.5, DD: 1.0 };
-                  const colorCls = needed?.color === 'red' ? 'text-red-600' : needed?.color === 'green' ? 'text-green-600' : needed?.color === 'orange' ? 'text-amber-600' : 'text-[#0056b3]';
-                  return (
-                    <tr key={t.key}>
-                      <td className="border border-[#dee2e6] px-3 py-2 font-semibold">{t.label}</td>
-                      <td className="border border-[#dee2e6] px-3 py-2 text-center">{coefMap[t.label]}</td>
-                      <td className="border border-[#dee2e6] px-3 py-2 text-center">{t.min}</td>
-                      <td className={`border border-[#dee2e6] px-3 py-2 text-center font-bold ${colorCls}`}>
-                        {needed ? needed.val : '-'}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+            <div className="space-y-1">
+              {TARGETS.map((t) => {
+                const needed = computeNeeded(t.min);
+                const coefMap = { AA: 4.0, BA: 3.5, BB: 3.0, CB: 2.5, CC: 2.0, DC: 1.5, DD: 1.0 };
+                const colorCls = needed?.color === 'red' ? 'text-red-600' : needed?.color === 'green' ? 'text-green-600' : needed?.color === 'orange' ? 'text-amber-600' : 'text-[#0056b3]';
+                return (
+                  <div key={t.key} className="flex items-center justify-between text-sm py-1 border-b border-gray-100 last:border-0">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold w-8">{t.label}</span>
+                      <span className="text-xs text-gray-400">({coefMap[t.label]})</span>
+                    </div>
+                    <span className={`font-bold ${colorCls}`}>
+                      {needed ? needed.val : '-'}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
           {/* Senaryo */}
-          <div className="bg-white border border-[#dee2e6] rounded-md p-5">
-            <h3 className="text-sm font-bold text-[#333] mb-3">Senaryo Hesaplayıcı (Not Değişim Aracı)</h3>
-            <p className="text-xs text-gray-500 mb-4">"Ödevden 10 puan fazla alırsam harf notum ne olur?"</p>
+          <div className="bg-white border border-[#dee2e6] rounded-md p-4">
+            <h3 className="text-sm font-bold text-[#333] mb-2">Senaryo</h3>
+            <p className="text-xs text-gray-500 mb-3">Notları değiştirerek sonucu görün.</p>
 
-            <div className="grid grid-cols-2 gap-3 mb-4">
+            <div className="space-y-2 mb-3">
               {selectedCourse.exams.map((e) => (
-                <div key={e.id}>
-                  <label className="block text-[11px] font-semibold text-gray-600 mb-1">{e.name} (%{e.weight})</label>
+                <div key={e.id} className="flex items-center gap-2">
+                  <label className="text-xs text-gray-600 w-24 truncate" title={e.name}>{e.name}</label>
+                  <span className="text-xs text-gray-400">%{e.weight}</span>
                   <input
                     type="number"
                     defaultValue={e.score ?? ''}
                     onChange={(ev) => handleScenarioChange(e.id, ev.target.value)}
-                    className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm"
+                    className="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"
                   />
                 </div>
               ))}
             </div>
 
-            <div className="bg-[#e9ecef] border-l-4 border-[#0056b3] rounded p-3 text-sm">
-              <div className="flex justify-between mb-1">
-                <span className="font-semibold">Mevcut Durum:</span>
-                <span>{currentResult ? `${currentResult.average} (${currentResult.letter || '—'})` : '—'}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="font-semibold">Yeni Durum:</span>
-                <span className={`font-bold ${scenarioResult?.isThresholdFail ? 'text-red-600' : 'text-[#0056b3]'}`}>
-                  {scenarioResult ? `${scenarioResult.average} (${scenarioResult.letter || '—'})` : '—'}
-                </span>
-              </div>
+            <div className="flex justify-between text-sm pt-2 border-t border-gray-100">
+              <span className="text-gray-500">Mevcut:</span>
+              <span>{currentResult ? `${currentResult.average} (${currentResult.letter || '—'})` : '—'}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-500">Yeni:</span>
+              <span className={`font-bold ${scenarioResult?.isThresholdFail ? 'text-red-600' : 'text-[#0056b3]'}`}>
+                {scenarioResult ? `${scenarioResult.average} (${scenarioResult.letter || '—'})` : '—'}
+              </span>
             </div>
           </div>
         </div>

@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { exportDataToFile, importDataFromFile } from '../utils/storage';
 
-export default function VeriYonetimi({ courses, onImport }) {
+export default function VeriYonetimi({ courses, onImport, onPaste, onReset }) {
   const fileInputRef = useRef(null);
   const [dragOver, setDragOver] = useState(false);
 
@@ -98,6 +98,44 @@ export default function VeriYonetimi({ courses, onImport }) {
             e.target.value = '';
           }}
         />
+      </div>
+
+      {/* Paste from university page */}
+      <div className="bg-white border border-[#dee2e6] rounded-md p-6">
+        <h2 className="text-base font-bold text-[#333] mb-2">Üniversite Sayfasından İçe Aktar</h2>
+        <p className="text-sm text-gray-500 mb-4">
+          Üniversite Sınav Sonuçları sayfasından kopyaladığınız metni yapıştırarak dersleri otomatik ekleyin.
+        </p>
+        <button
+          onClick={onPaste}
+          className="inline-flex items-center gap-2 bg-[#0056b3] text-white text-sm font-medium px-5 py-3 rounded hover:bg-[#004494] transition active:scale-95"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          </svg>
+          Metin Yapıştır
+        </button>
+      </div>
+
+      {/* Reset */}
+      <div className="bg-white border border-red-200 rounded-md p-6">
+        <h2 className="text-base font-bold text-red-700 mb-2">Tüm Verileri Sil</h2>
+        <p className="text-sm text-gray-500 mb-4">
+          Bu işlem tüm derslerinizi, notlarınızı ve ayarlarınızı kalıcı olarak siler. Geri alınamaz.
+        </p>
+        <button
+          onClick={() => {
+            if (confirm('Tüm dersleriniz ve notlarınız silinecek. Bu işlem geri alınamaz. Emin misiniz?')) {
+              onReset();
+            }
+          }}
+          className="inline-flex items-center gap-2 bg-red-50 text-red-700 border border-red-200 text-sm font-medium px-5 py-3 rounded hover:bg-red-100 transition active:scale-95"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+          Tümünü Sil / Sıfırla
+        </button>
       </div>
 
       {/* Info */}

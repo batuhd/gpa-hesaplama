@@ -4,6 +4,7 @@ import DersTablosu from './components/DersTablosu';
 import DersModal from './components/DersModal';
 import Transkript from './components/Transkript';
 import VeriYonetimi from './components/VeriYonetimi';
+import PasteModal from './components/PasteModal';
 import Alert from './components/Alert';
 import { loadData, saveData } from './utils/storage';
 
@@ -11,6 +12,7 @@ export default function App() {
   const [currentPage, setPage] = useState('results');
   const [courses, setCourses] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
+  const [pasteModalOpen, setPasteModalOpen] = useState(false);
   const [editingCourse, setEditingCourse] = useState(null);
   const [notification, setNotification] = useState(null);
 
@@ -49,6 +51,10 @@ export default function App() {
     setModalOpen(true);
   };
 
+  const openPaste = () => {
+    setPasteModalOpen(true);
+  };
+
   const handleImport = useCallback((data, error) => {
     if (error) {
       setNotification({ message: error, type: 'error' });
@@ -60,16 +66,43 @@ export default function App() {
     }
   }, []);
 
+  const handleReset = useCallback(() => {
+    setCourses([]);
+    setNotification({ message: 'Tüm veriler silindi.', type: 'success' });
+  }, []);
+
+  const handlePasteImport = useCallback((parsedCourses, mode) => {
+    let counter = 0;
+    setCourses((prev) => {
+      if (mode === 'overwrite') {
+        const updated = [...prev];
+        parsedCourses.forEach((newCourse) => {
+          const idx = updated.findIndex(
+            (c) => c.code === newCourse.code && c.year === newCourse.year && c.term === newCourse.term
+          );
+          if (idx !== -1) {
+            updated[idx] = { ...newCourse, id: updated[idx].id };
+          } else {
+            updated.push({ ...newCourse, id: Date.now() + (++counter) });
+          }
+        });
+        return updated;
+      }
+      return [...prev, ...parsedCourses.map((c) => ({ ...c, id: Date.now() + (++counter) }))];
+    });
+    setNotification({ message: `${parsedCourses.length} ders başarıyla eklendi!`, type: 'success' });
+  }, []);
+
   const renderPage = () => {
     switch (currentPage) {
       case 'results':
-        return <DersTablosu courses={courses} onEdit={openEdit} onAdd={openAdd} />;
+        return <DersTablosu courses={courses} onEdit={openEdit} onAdd={openAdd} onPaste={openPaste} />;
       case 'transcript':
         return <Transkript courses={courses} />;
       case 'settings':
-        return <VeriYonetimi courses={courses} onImport={handleImport} />;
+        return <VeriYonetimi courses={courses} onImport={handleImport} onPaste={openPaste} onReset={handleReset} />;
       default:
-        return <DersTablosu courses={courses} onEdit={openEdit} onAdd={openAdd} />;
+        return <DersTablosu courses={courses} onEdit={openEdit} onAdd={openAdd} onPaste={openPaste} />;
     }
   };
 
@@ -82,6 +115,12 @@ export default function App() {
         onSave={handleSaveCourse}
         onDelete={handleDeleteCourse}
         editingCourse={editingCourse}
+      />
+      <PasteModal
+        isOpen={pasteModalOpen}
+        onClose={() => setPasteModalOpen(false)}
+        currentCourses={courses}
+        onConfirm={handlePasteImport}
       />
       {notification && (
         <Alert
