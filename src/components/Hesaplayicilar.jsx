@@ -1,14 +1,14 @@
 import { useState, useMemo } from 'react';
-import { calculateCourse, getLetterFromScore } from '../utils/grades';
+import { calculateCourse, resolveCourseGrade, getLetterFromScore } from '../utils/grades';
 
 const TARGETS = [
   { key: 'aa', label: 'AA', min: 90 },
-  { key: 'ba', label: 'BA', min: 80 },
-  { key: 'bb', label: 'BB', min: 70 },
-  { key: 'cb', label: 'CB', min: 60 },
-  { key: 'cc', label: 'CC', min: 55 },
-  { key: 'dc', label: 'DC', min: 50 },
-  { key: 'dd', label: 'DD', min: 45 },
+  { key: 'ba', label: 'BA', min: 79 },
+  { key: 'bb', label: 'BB', min: 68 },
+  { key: 'cb', label: 'CB', min: 61 },
+  { key: 'cc', label: 'CC', min: 54 },
+  { key: 'dc', label: 'DC', min: 47 },
+  { key: 'dd', label: 'DD', min: 39 },
 ];
 
 function findFinalExam(exams) {
@@ -54,7 +54,7 @@ export default function Hesaplayicilar({ courses }) {
 
   const currentResult = useMemo(() => {
     if (!selectedCourse) return null;
-    return calculateCourse(selectedCourse);
+    return resolveCourseGrade(selectedCourse);
   }, [selectedCourse]);
 
   // Final target calculator
@@ -198,7 +198,20 @@ export default function Hesaplayicilar({ courses }) {
 
             <div className="flex justify-between text-sm pt-2 border-t border-gray-100">
               <span className="text-gray-500">Mevcut:</span>
-              <span>{currentResult ? `${currentResult.average} (${currentResult.letter || '—'})` : '—'}</span>
+              <span>
+                {currentResult ? (
+                  <>
+                    {currentResult.isOverride ? (
+                      <span className="inline-flex items-center gap-1">
+                        {currentResult.letter}
+                        <span className="inline-flex items-center px-1 py-0.5 rounded text-[10px] font-medium bg-purple-100 text-purple-700" title="Harf notu manuel olarak belirlendi">M</span>
+                      </span>
+                    ) : (
+                      `${currentResult.average} (${currentResult.letter || '—'})`
+                    )}
+                  </>
+                ) : '—'}
+              </span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-gray-500">Yeni:</span>

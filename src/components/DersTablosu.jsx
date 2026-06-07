@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { calculateCourse } from '../utils/grades';
+import { resolveCourseGrade } from '../utils/grades';
 import Hesaplayicilar from './Hesaplayicilar';
 
 export default function DersTablosu({ courses, onEdit, onAdd, onPaste }) {
@@ -86,7 +86,7 @@ export default function DersTablosu({ courses, onEdit, onAdd, onPaste }) {
                 </tr>
               )}
               {filtered.map((c) => {
-                const result = calculateCourse(c);
+                const result = resolveCourseGrade(c);
                 const activeExams = c.exams.filter((e) => (e.weight || 0) > 0);
                 const rowSpan = Math.max(activeExams.length, 1);
 
@@ -110,7 +110,12 @@ export default function DersTablosu({ courses, onEdit, onAdd, onPaste }) {
                             {result.isThresholdFail ? (
                               <span className="text-red-600 font-bold" title="Final barajını geçemediğiniz için FF">FF (Baraj)</span>
                             ) : (
-                              <strong>{result.letter || '—'}</strong>
+                              <div className="flex items-center gap-2">
+                                <strong>{result.letter || '—'}</strong>
+                                {result.isOverride && (
+                                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-purple-100 text-purple-700" title="Harf notu manuel olarak belirlendi">Manuel</span>
+                                )}
+                              </div>
                             )}
                           </td>
                         </>
@@ -135,7 +140,7 @@ export default function DersTablosu({ courses, onEdit, onAdd, onPaste }) {
           </div>
         )}
         {filtered.map((c) => {
-          const result = calculateCourse(c);
+          const result = resolveCourseGrade(c);
           const activeExams = c.exams.filter((e) => (e.weight || 0) > 0);
 
           return (
@@ -152,7 +157,12 @@ export default function DersTablosu({ courses, onEdit, onAdd, onPaste }) {
                       {result.isThresholdFail ? (
                         <span className="text-red-600" title="Final barajını geçemediğiniz için FF">FF</span>
                       ) : (
-                        result.letter || '—'
+                        <div className="flex items-center gap-1">
+                          <span>{result.letter || '—'}</span>
+                          {result.isOverride && (
+                            <span className="inline-flex items-center px-1 py-0.5 rounded text-[10px] font-medium bg-purple-100 text-purple-700" title="Harf notu manuel olarak belirlendi">M</span>
+                          )}
+                        </div>
                       )}
                     </div>
                     <div className="text-xs text-gray-400">{Number(c.credit).toFixed(2)} Kredi</div>
@@ -188,9 +198,15 @@ export default function DersTablosu({ courses, onEdit, onAdd, onPaste }) {
         })}
       </div>
 
+      {/* Warning */}
+      <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded text-sm leading-relaxed">
+        <p className="font-semibold mb-1">Bilgilendirme</p>
+        <p>Okulunuz <strong>bağıl değerlendirme</strong> (curved grading) sistemini kullanmaktadır. Sınıf ortalaması ve standart sapması bilinmediğinden, bu hesaplayıcı sadece <strong>mutlak puan aralıklarına</strong> göre harf notu üretir. 20+ kişilik derslerde okulunuzun resmi notu ile farklılık gösterebilir. Final barajını da elle girmeyi unutmayın.</p>
+      </div>
+
       {/* Legend */}
       <div className="text-[11px] text-gray-500 leading-relaxed">
-        <p><strong>Notlar ve Katsayılar;</strong> AA:4.0, BA:3.5, BB:3.0, CB:2.5, CC:2.0, DC:1.5, DD:1.0, FF:0.0, EX:-, F:0, I:0, NA:0, W:0, M:-, S:-, U:-, P:-, NI:0.</p>
+        <p><strong>Notlar ve Katsayılar;</strong> AA:4.0, BA:3.5, BB: 3, CB:2.5, CC:2 , DC:1.5, DD:1, FF:0, EX:-, F:0 , I:0, NA:0, W:0 , M:-, S:-, U:-, P:-, NI:0.</p>
         <p><strong>Kısaltmalar;</strong> Z: Zorunlu, P:Program Seçmeli, F:Fakülte Seçmeli, U:Üniversite Seçmeli, Y:Ortalamaya Katılmaz, R:Tekrar, T: Transfer, D-:Seçilen Ders, I:Eksik Not, S:Yeterli Not, U:Yetersiz Not, EX:Muaf Not, M:Muaf Not, W:Çekilmiş Not, NI:Program Dışı Not, P:Başarıyla Sürdürmekte Olan, NA:Devamsızlıktan Başarısız</p>
       </div>
 

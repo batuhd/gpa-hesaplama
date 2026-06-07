@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { parseAltinbasText } from '../utils/altinbasParser';
-import { calculateCourse } from '../utils/grades';
+import { resolveCourseGrade } from '../utils/grades';
 
 export default function PasteModal({ isOpen, onClose, currentCourses, onConfirm }) {
   const [text, setText] = useState('');
@@ -167,14 +167,13 @@ export default function PasteModal({ isOpen, onClose, currentCourses, onConfirm 
                       <th className="text-left px-3 py-2 border-b">Ders Adı</th>
                       <th className="px-3 py-2 border-b">Kredi</th>
                       <th className="px-3 py-2 border-b">AKTS</th>
-                      <th className="text-left px-3 py-2 border-b">Sınavlar</th>
-                      <th className="px-3 py-2 border-b">Üni. Notu</th>
-                      <th className="px-3 py-2 border-b">Hesaplanan</th>
+                  <th className="text-left px-3 py-2 border-b">Sınavlar</th>
+                  <th className="px-3 py-2 border-b">Harf Notu</th>
                     </tr>
                   </thead>
                   <tbody>
                     {parsed.courses.map((c) => {
-                      const res = calculateCourse(c);
+                      const res = resolveCourseGrade(c);
                       return (
                         <tr
                           key={c.id}
@@ -197,9 +196,6 @@ export default function PasteModal({ isOpen, onClose, currentCourses, onConfirm 
                                 {e.score !== null ? e.score : '—'}
                               </div>
                             ))}
-                          </td>
-                          <td className="px-3 py-2 text-center font-semibold">
-                            {c.universityLetter || '—'}
                           </td>
                           <td className="px-3 py-2 text-center font-semibold">
                             {res.isThresholdFail ? (

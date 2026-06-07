@@ -81,13 +81,9 @@ export function parseAltinbasText(text, fallbackYear = '', fallbackTerm = '') {
         const akts = parseFloat(parts[3]) || 0;
 
         // parts[4] is either letter grade or (if missing) shifted exam info
-        let letterGrade = '';
         let examIdx = 5;
         const p4 = parts[4] ? parts[4].trim() : '';
-        if (p4 && !p4.includes('/') && !p4.includes('%')) {
-          letterGrade = p4;
-        } else if (p4 && (p4.includes('/') || p4.includes('%'))) {
-          letterGrade = '';
+        if (p4 && (p4.includes('/') || p4.includes('%'))) {
           examIdx = 4;
         }
 
@@ -115,7 +111,6 @@ export function parseAltinbasText(text, fallbackYear = '', fallbackTerm = '') {
           term,
           year,
           exams,
-          universityLetter: letterGrade || null,
         };
         courses.push(currentCourse);
       }

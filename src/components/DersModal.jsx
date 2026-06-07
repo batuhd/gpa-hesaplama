@@ -15,6 +15,8 @@ const defaultCourse = () => ({
   credit: 3,
   ects: 5,
   finalThreshold: 0,
+  overrideActive: false,
+  overrideLetter: 'FF',
   term: 'Bahar',
   year: '2025-2026',
   exams: [emptyExam(), emptyExam()],
@@ -86,6 +88,8 @@ export default function DersModal({ isOpen, onClose, onSave, onDelete, editingCo
       credit: Number(form.credit) || 0,
       ects: Number(form.ects) || 0,
       finalThreshold: Number(form.finalThreshold) || 0,
+      overrideActive: !!form.overrideActive,
+      overrideLetter: form.overrideLetter || 'FF',
       exams: form.exams.map((e) => ({
         ...e,
         weight: Number(e.weight) || 0,
@@ -198,6 +202,34 @@ export default function DersModal({ isOpen, onClose, onSave, onDelete, editingCo
                 placeholder="Yoksa 0 bırakın"
               />
               <p className="text-[11px] text-gray-400 mt-0.5">Final notu bu değerin altındaysa otomatik FF.</p>
+            </div>
+            <div>
+              <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer mb-2">
+                <input
+                  type="checkbox"
+                  checked={!!form.overrideActive}
+                  onChange={(e) => handleChange('overrideActive', e.target.checked)}
+                  className="accent-[#0056b3]"
+                />
+                Harf notunu kendim belirle
+              </label>
+              {form.overrideActive && (
+                <select
+                  value={form.overrideLetter || 'FF'}
+                  onChange={(e) => handleChange('overrideLetter', e.target.value)}
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-white"
+                >
+                  <option value="AA">AA</option>
+                  <option value="BA">BA</option>
+                  <option value="BB">BB</option>
+                  <option value="CB">CB</option>
+                  <option value="CC">CC</option>
+                  <option value="DC">DC</option>
+                  <option value="DD">DD</option>
+                  <option value="FF">FF</option>
+                </select>
+              )}
+              <p className="text-[11px] text-gray-400 mt-0.5">İşaretlerseniz hesaplanan not yerine seçtiğiniz not kullanılır.</p>
             </div>
           </div>
 
